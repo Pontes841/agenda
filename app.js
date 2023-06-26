@@ -221,10 +221,12 @@ const client = new Client({
 let isConnected = false; // Estado de conexão
 
 // Função para inicializar o cliente do WhatsApp
-async function initializeClient() {
-    if (!isConnected) {
-        await client.initialize();
-        isConnected = true;
+async function enviarMensagem(message) {
+    try {
+        await Client.sendMessage(message);
+        console.log('Mensagem enviada com sucesso');
+    } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
     }
 }
 
