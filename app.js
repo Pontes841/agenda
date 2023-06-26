@@ -212,17 +212,25 @@ const client = new Client({
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process', // <- this one doesn't work in Windows
+            '--single-process',
             '--disable-gpu'
         ]
     }
 });
 
-// Inicialização do cliente do WhatsApp
-client.initialize();
+let isConnected = false; // Estado de conexão
+
+// Função para inicializar o cliente do WhatsApp
+async function initializeClient() {
+    if (!isConnected) {
+        await client.initialize();
+        isConnected = true;
+    }
+}
 
 // Configuração do Socket.IO para comunicação em tempo real
 io.on('connection', function (socket) {
+    initializeClient(); // Inicializar o cliente apenas uma vez por conexão
     socket.emit('message', 'Conectando...');
 
     // Evento para receber o QR Code e exibi-lo na interface
