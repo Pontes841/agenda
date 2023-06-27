@@ -222,6 +222,8 @@ const client = new Client({
 client.initialize();
 
 // Configuração do Socket.IO para comunicação em tempo real
+let authenticated = false;
+
 io.on('connection', function (socket) {
     socket.emit('message', 'Conectando...');
 
@@ -422,12 +424,14 @@ io.on('connection', function (socket) {
         });
 
     });
-
     // Evento disparado quando o cliente é autenticado com sucesso
     client.on('authenticated', () => {
-        socket.emit('authenticated', 'BOT-ZDG Autenticado!');
-        socket.emit('message', 'BOT-ZDG Autenticado!');
-        console.log('BOT-ZDG Autenticado');
+        if (!authenticated) {
+            authenticated = true;
+            socket.emit('authenticated', 'BOT-ZDG Autenticado!');
+            socket.emit('message', 'BOT-ZDG Autenticado!');
+            console.log('BOT-ZDG Autenticado');
+        }
     });
 
     // Evento disparado quando a autenticação falha
