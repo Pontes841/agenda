@@ -212,27 +212,17 @@ const client = new Client({
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process',
+            '--single-process', // <- this one doesn't work in Windows
             '--disable-gpu'
         ]
     }
 });
 
-let isConnected = false; // Estado de conexão
-
-// Função para inicializar o cliente do WhatsApp
-async function enviarMensagem(message) {
-    try {
-        await Client.sendMessage(message);
-        console.log('Mensagem enviada com sucesso');
-    } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
-    }
-}
+// Inicialização do cliente do WhatsApp
+client.initialize();
 
 // Configuração do Socket.IO para comunicação em tempo real
 io.on('connection', function (socket) {
-    initializeClient(); // Inicializar o cliente apenas uma vez por conexão
     socket.emit('message', 'Conectando...');
 
     // Evento para receber o QR Code e exibi-lo na interface
@@ -240,14 +230,14 @@ io.on('connection', function (socket) {
         console.log('QR RECEIVED', qr);
         qrcode.toDataURL(qr, (err, url) => {
             socket.emit('qr', url);
-            socket.emit('message', 'QRCode recebido, aponte a câmera do seu celular!');
+            socket.emit('message', 'BOT-ZDG QRCode recebido, aponte a câmera do seu celular!');
         });
     });
 
     // Evento disparado quando o cliente está pronto para uso
     client.on('ready', async () => {
-        socket.emit('ready', 'Dispositivo pronto!');
-        socket.emit('message', 'Dispositivo pronto!');
+        socket.emit('ready', 'BOT-ZDG Dispositivo pronto!');
+        socket.emit('message', 'BOT-ZDG Dispositivo pronto!');
 
 
         // Tarefa agendada para executar a lógica de envio de mensagens periodicamente
@@ -435,31 +425,31 @@ io.on('connection', function (socket) {
 
     // Evento disparado quando o cliente é autenticado com sucesso
     client.on('authenticated', () => {
-        socket.emit('authenticated', 'Autenticado!');
-        socket.emit('message', 'Autenticado!');
-        console.log('Autenticado');
+        socket.emit('authenticated', 'BOT-ZDG Autenticado!');
+        socket.emit('message', 'BOT-ZDG Autenticado!');
+        console.log('BOT-ZDG Autenticado');
     });
 
     // Evento disparado quando a autenticação falha
     client.on('auth_failure', function () {
-        socket.emit('message', 'Falha na autenticação, reiniciando...');
-        console.error('Falha na autenticação');
+        socket.emit('message', 'BOT-ZDG Falha na autenticação, reiniciando...');
+        console.error('BOT-ZDG Falha na autenticação');
     });
 
     // Evento disparado quando o estado de conexão do cliente muda
     client.on('change_state', state => {
-        console.log('Status de conexão:', state);
+        console.log('BOT-ZDG Status de conexão:', state);
     });
 
     // Evento disparado quando o cliente é desconectado
     client.on('disconnected', (reason) => {
-        socket.emit('message', 'Cliente desconectado!');
-        console.log('Cliente desconectado', reason);
+        socket.emit('message', 'BOT-ZDG Cliente desconectado!');
+        console.log('BOT-ZDG Cliente desconectado', reason);
         client.initialize();
     });
 });
 
 // Inicialização do servidor
 server.listen(port, function () {
-    console.log('rodando na porta *:' + port);
+    console.log('BOT-ZDG rodando na porta *:' + port);
 });
