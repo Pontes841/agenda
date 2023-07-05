@@ -422,6 +422,7 @@ client.initialize();
 
 // Configuração do Socket.IO para comunicação em tempo real
 let authenticated = false;
+let sentMessages = []; // Lista de mensagens enviadas
 
 io.on('connection', function (socket) {
     socket.emit('message', 'Conectando...');
@@ -461,30 +462,33 @@ io.on('connection', function (socket) {
 
                 for (const agendamento of agendamentosCobranca) {
                     if (agendamento.data_cobranca && agendamento.data_cobranca <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagemco && agendamento.mensagemco.trim() !== '') {
-                                console.log('URL da mensagemco:', agendamento.mensagemco);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagemco);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagemco && agendamento.mensagemco.trim() !== '') {
+                                    console.log('URL da mensagemco:', agendamento.mensagemco);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagemco);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatuscob(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusco atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusco da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatuscob(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusco atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusco da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
@@ -494,30 +498,33 @@ io.on('connection', function (socket) {
 
                 for (const agendamento of agendamentosSolicitacao) {
                     if (agendamento.data_solicitacao && agendamento.data_solicitacao <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagemvd && agendamento.mensagemvd.trim() !== '') {
-                                console.log('URL da mensagemvd:', agendamento.mensagemvd);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagemvd);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagemvd && agendamento.mensagemvd.trim() !== '') {
+                                    console.log('URL da mensagemvd:', agendamento.mensagemvd);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagemvd);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusvd(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusvd atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusvd da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusvd(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusvd atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusvd da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
@@ -526,32 +533,36 @@ io.on('connection', function (socket) {
                 }
 
 
+
                 for (const agendamento of agendamentosFinalizacao) {
                     if (agendamento.data_finalizacao && agendamento.data_finalizacao <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagemdf && agendamento.mensagemdf.trim() !== '') {
-                                console.log('URL da mensagemdf:', agendamento.mensagemdf);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagemdf);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagemdf && agendamento.mensagemdf.trim() !== '') {
+                                    console.log('URL da mensagemdf:', agendamento.mensagemdf);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagemdf);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusdf(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusdf atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusdf da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusdf(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusdf atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusdf da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
@@ -562,232 +573,259 @@ io.on('connection', function (socket) {
 
                 for (const agendamento of agendamentosDate1m) {
                     if (agendamento.date1m && agendamento.date1m <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagem1m && agendamento.mensagem1m.trim() !== '') {
-                                console.log('URL da mensagem1m:', agendamento.mensagem1m);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagem1m);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagem1m && agendamento.mensagem1m.trim() !== '') {
+                                    console.log('URL da mensagem1m:', agendamento.mensagem1m);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagem1m);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatus1m(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status1m atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o status1m da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatus1m(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status1m atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o status1m da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
 
                 for (const agendamento of agendamentosDate3m) {
                     if (agendamento.date3m && agendamento.date3m <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagem3m && agendamento.mensagem3m.trim() !== '') {
-                                console.log('URL da mensagem3m:', agendamento.mensagem3m);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagem3m);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagem3m && agendamento.mensagem3m.trim() !== '') {
+                                    console.log('URL da mensagem3m:', agendamento.mensagem3m);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagem3m);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatus3m(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status3m atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o status3m da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatus3m(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status3m atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o status3m da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
 
                 for (const agendamento of agendamentosDate6m) {
                     if (agendamento.date6m && agendamento.date6m <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagem6m && agendamento.mensagem6m.trim() !== '') {
-                                console.log('URL da mensagem6m:', agendamento.mensagem6m);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagem6m);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagem6m && agendamento.mensagem6m.trim() !== '') {
+                                    console.log('URL da mensagem6m:', agendamento.mensagem6m);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagem6m);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatus6m(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status6m atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o status6m da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatus6m(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status6m atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o status6m da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
 
                 for (const agendamento of agendamentosDate12m) {
                     if (agendamento.date12m && agendamento.date12m <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagem12m && agendamento.mensagem12m.trim() !== '') {
-                                console.log('URL da mensagem12m:', agendamento.mensagem12m);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagem12m);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagem12m && agendamento.mensagem12m.trim() !== '') {
+                                    console.log('URL da mensagem12m:', agendamento.mensagem12m);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagem12m);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatus12m(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status12m atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o status12m da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatus12m(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - status12m atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o status12m da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
                 for (const agendamento of agendamentosDataAniversario) {
                     if (agendamento.data_aniversario && agendamento.data_aniversario <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensageman && agendamento.mensageman.trim() !== '') {
-                                console.log('URL da mensageman:', agendamento.mensageman);
-                                const media = await MessageMedia.fromUrl(agendamento.mensageman);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensageman && agendamento.mensageman.trim() !== '') {
+                                    console.log('URL da mensageman:', agendamento.mensageman);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensageman);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusan(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusan atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusan da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusan(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusan atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusan da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
                 for (const agendamento of agendamentosGarantia) {
                     if (agendamento.data_solicitacao && agendamento.data_solicitacao <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagems && agendamento.mensagems.trim() !== '') {
-                                console.log('URL da mensagems:', agendamento.mensagems);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagems);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagems && agendamento.mensagems.trim() !== '') {
+                                    console.log('URL da mensagems:', agendamento.mensagems);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagems);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusga(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statuss atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statuss da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusga(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statuss atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statuss da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
 
                 for (const agendamento of agendamentosGarantiafi) {
                     if (agendamento.data_finalizacao && agendamento.data_finalizacao <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagemf && agendamento.mensagemf.trim() !== '') {
-                                console.log('URL da mensagemf:', agendamento.mensagemf);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagemf);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagemf && agendamento.mensagemf.trim() !== '') {
+                                    console.log('URL da mensagemf:', agendamento.mensagemf);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagemf);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusgaf(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusf atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusf da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusgaf(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusf atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusf da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
@@ -796,32 +834,36 @@ io.on('connection', function (socket) {
                 }
 
 
+
                 for (const agendamento of agendamentosPap) {
                     if (agendamento.data_entrevista && agendamento.data_entrevista <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagemen && agendamento.mensagemen.trim() !== '') {
-                                console.log('URL da mensagemen:', agendamento.mensagemen);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagemen);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagemen && agendamento.mensagemen.trim() !== '') {
+                                    console.log('URL da mensagemen:', agendamento.mensagemen);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagemen);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusag(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusen atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusen da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusag(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusen atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusen da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
@@ -832,36 +874,40 @@ io.on('connection', function (socket) {
 
                 for (const agendamento of agendamentosPapd) {
                     if (agendamento.data_consulta && agendamento.data_consulta <= hoje && !agendamento.enviado) {
-                        // Marcar o agendamento como enviado
-                        agendamento.enviado = true;
-
                         try {
-                            if (agendamento.nome && agendamento.nome.trim() !== '') {
-                                const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
-                                if (exists.canReceiveMessage) {
-                                    await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
-                                } else {
-                                    console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                            // Verificar se a mensagem já foi enviada
+                            if (!sentMessages.includes(agendamento.id)) {
+                                if (agendamento.nome && agendamento.nome.trim() !== '') {
+                                    const exists = await client.checkNumberStatus(agendamento.fone + '@c.us');
+                                    if (exists.canReceiveMessage) {
+                                        await client.sendMessage(agendamento.fone + '@c.us', agendamento.nome);
+                                    } else {
+                                        console.log(`Número de telefone inválido ou não registrado: ${agendamento.fone}`);
+                                    }
                                 }
-                            }
 
-                            if (agendamento.mensagemco && agendamento.mensagemco.trim() !== '') {
-                                console.log('URL da mensagemco:', agendamento.mensagemco);
-                                const media = await MessageMedia.fromUrl(agendamento.mensagemco);
-                                await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
-                            }
+                                if (agendamento.mensagemco && agendamento.mensagemco.trim() !== '') {
+                                    console.log('URL da mensagemco:', agendamento.mensagemco);
+                                    const media = await MessageMedia.fromUrl(agendamento.mensagemco);
+                                    await client.sendMessage(agendamento.fone + '@c.us', media, { caption: 'Óticas Diniz' });
+                                }
 
-                            const success = await updateStatusco(agendamento.id);
-                            if (success) {
-                                console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusco atualizado para "enviado"`);
-                            } else {
-                                console.log(`BOT-ZDG - Falha ao atualizar o statusco da mensagem ID: ${agendamento.id}`);
+                                const success = await updateStatusco(agendamento.id);
+                                if (success) {
+                                    // Marcar o agendamento como enviado
+                                    agendamento.enviado = true;
+                                    sentMessages.push(agendamento.id); // Adicionar à lista de mensagens enviadas
+                                    console.log(`BOT-ZDG - Mensagem ID: ${agendamento.id} - statusco atualizado para "enviado"`);
+                                } else {
+                                    console.log(`BOT-ZDG - Falha ao atualizar o statusco da mensagem ID: ${agendamento.id}`);
+                                }
                             }
                         } catch (error) {
                             console.error('Erro ao enviar a mensagem:', error);
                         }
                     }
                 }
+
 
 
             } catch (error) {
